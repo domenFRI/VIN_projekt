@@ -4,7 +4,7 @@
 
 **Uporabljene komponente:**
   - Arduino Uno
-  - EZO-PMP dozirna črpalka
+  - EZO-PMP dozirna črpalka prozvajalca Atlas Scientific
   - SSD1306 SPI OLED zaslon
   - merilec vlažnosti zemlje z LM393
   - DHT11 merilec vlage in temperature v prostoru
@@ -13,6 +13,7 @@
 Za delo sem si izbral mikrokontroler Arduino Uno. Originalno sem sicer želel projekt izvesti na STM32F4, vendar sem se tekom projekta premislil, kajti za ključno komponento, ki sem jo imel že od prej - EZO-PMP črpalko, obstaja proizvajalčeva obsežna dokumentacija zgolj za Arduino in Raspberry PI.
 
 **Senzor za merjenje vlažnosti zemlje**
+
 Senzor je že prišel s povezanim napetostnim primerjalnikom LM393. Na njem so 4 pini, od katerih sem uporabil 3:
 - Vcc na 5V,
 - Gnd,
@@ -35,6 +36,9 @@ V glavni loop:
 Privzeto je prebrana vrednost senzorja, priklopljenega na 5V, v rangu od 0 do 1023. Za lažje delo in kasneje prikaz sem vrednost pretvoril na rang od 0 do 100%, kjer 100% pomeni maksimalna saturacija z vodo.
 
 **EZO-PMP črpalka**
+
+Dokumentacija: https://files.atlas-scientific.com/EZO_PMP_Datasheet.pdf
+
 Gre za kompaktno dozirno peristaltično črpalko z večimi načini delovanja. Komunicira preko UART ali I2C. Zahteva dve napajanji: za motor črpalke sem jo povezal na 12V, za kontrolni sistem pa na 5V. Ima tri glavne komponente, kaseto, motor in kontrolno enoto:
 
 ![image](https://github.com/domenFRI/VIN_projekt/assets/76186864/27afdc24-373d-49b0-a403-5da2ef91115b) ![image](https://github.com/domenFRI/VIN_projekt/assets/76186864/5a3590a2-3067-4eb9-9b30-f4faef66b377)
@@ -83,4 +87,24 @@ V glavnem loopu:
 Dodal sem tudi kodo iz proizvajalčeve dokumentacije, ki ob priklopljenem Arduinu na računalnik omogoča komunikacijo s črpalko direktno z vnosom s tipkovnico in serijskim monitorjem.
 
 **DHT11 merilec vlage in temperature v prostoru**
-Povezal sme ga v skladu z navodili
+
+Povezal sem 3 pine: + upor!
+- Vcc na 5V,
+- Gnd,
+- signal na pin 7.
+
+V kodi:
+```
+//DHT11 senzor vlage in temperature
+#include <dht.h>
+dht DHT;
+#define DHT11_PIN 7 //definiran pin
+```
+V loopu:
+```
+  int chk = DHT.read11(DHT11_PIN); //prebere vrednost
+```
+Vrednost temperature in vlage sem nato uporabil pri izpisu na zaslon.
+
+**SSD1306 SPI OLED zaslon**
+
