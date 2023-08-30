@@ -69,7 +69,7 @@ V glavnem loopu:
 
 ```
 //pogon crpalke EZO-PMP
-  if (odstotek_vlaznost <  15.0) { //ce je vlaznost premajhna in od zadnjega pogona crpalke ni minilo n-časa
+  if (odstotek_vlaznost <  15.0) { //ce je vlaznost prenizka in od zadnjega pogona crpalke ni minilo n-časa
 
     if (startTime == 0) {
       startTime = millis(); //zagon casovnika
@@ -84,7 +84,7 @@ V glavnem loopu:
     }
   }
 ```
-Dodal sem tudi kodo iz proizvajalčeve dokumentacije, ki ob priklopljenem Arduinu na računalnik omogoča komunikacijo s črpalko direktno z vnosom s tipkovnico in serijskim monitorjem.
+Dodal Gsem tudi kodo iz proizvajalčeve dokumentacije, ki ob priklopljenem Arduinu na računalnik omogoča komunikacijo s črpalko direktno z vnosom s tipkovnico in serijskim monitorjem.
 
 **DHT11 merilec vlage in temperature v prostoru**
 
@@ -107,4 +107,71 @@ V loopu:
 Vrednost temperature in vlage sem nato uporabil pri izpisu na zaslon.
 
 **SSD1306 SPI OLED zaslon**
+
+Dodal sem zaslon, ki komunicira preko SPI protokola. Na njem je 7 pinov, ki sem jih povezal:
+- Vcc na 3.3V,
+- Gnd,
+- D0 na pin13,
+- D1 na 11,
+- CS na 10,
+- DC na 9,
+- Reset na 8.
+
+V kodi:
+```
+//display
+#include "U8glib.h"
+U8GLIB_SH1106_128X64 u8g(13, 11, 10, 9, 8);  // D0=13, D1=11, CS=10, DC=9, Reset=8
+float temp = 12.0;
+float pavza = 0.0;
+```
+Zaslon sem uporabil za 2 zaslonski maski, in sicer ob prižigu se prikaže moje ime:
+
+```
+  //display uvodni zaslon
+  u8g.firstPage();  
+  do {
+    u8g.setFont(u8g_font_helvB10);  
+    u8g.drawStr(30, 10, " "); 
+    u8g.drawStr(50, 30, " Zalivalnik ");
+    u8g.drawStr(10, 50, " ");
+    u8g.drawStr(10, 60, "Domen Mravinc");
+  } while( u8g.nextPage() );
+  delay(3000);
+```
+
+Po treh sekundah se prikaže glavni del:
+
+```
+  u8g.firstPage();  
+  do {
+    u8g.setFont(u8g_font_helvR12);  
+    u8g.drawStr(0, 15, "Zemlja:");  
+    u8g.setPrintPos(75, 15);
+    u8g.print(odstotek_vlaznost, 0);
+    //u8g.print((char)176);
+    u8g.print("%");
+    
+    u8g.drawStr(0, 35, "Vlaga:");
+    u8g.setPrintPos(75, 35);
+    u8g.print(DHT.humidity, 0);
+    u8g.print("%");
+
+    u8g.drawStr(0, 55, "Temp.:");
+    u8g.setPrintPos(75, 55);
+    u8g.print(DHT.temperature, 0);
+    u8g.print((char)176);
+    u8g.print("C");
+...
+```
+Zaslon torej hkrati prikazuje vlažnost zemlje, vlažnost okolice in temperaturo.
+
+**Prikaz delovanja na videu:**
+
+https://video.arnes.si/watch/84rc7gp5l1jd
+
+Ob priklopu zalivalnika se na zaslonu najprej izpiše uvodno sporočilo, po treh sekundah pa informacije o vlažnosti zemlje, zraka in temperatura okolice. Ker je vrednost vlažnosti zemlje <15%, se črpalka takoj zažene in izčrpa 80 ml vode. Med črpanjem vode se odstotek vlažnosti zemlje viša. Črpalka nato v vsakem primeru 15 minut ne bo črpala, ne glede na vlažnost, zato da se že izčrpana voda vpije v zemljo. 
+
+![image](https://github.com/domenFRI/VIN_projekt/assets/76186864/94a8d180-b1cd-474e-aa6d-0c4ac2f7eec3)
+
 
